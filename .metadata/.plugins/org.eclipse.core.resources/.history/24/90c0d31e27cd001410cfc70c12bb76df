@@ -1,0 +1,185 @@
+
+package Ellie.Selenium_ADV_Day_04;
+
+
+import java.io.File;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Element;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import org.w3c.dom.Node;
+
+import org.junit.*;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+
+import com.csvreader.CsvReader;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+
+@RunWith(Parameterized.class)
+public class DDCalculator {
+	
+	private WebDriver driver;
+	private static final String URL = "http://chemistry.about.com/library/weekly/blcalculator.htm";
+	private int num1;
+	private int num2;
+	private String oper;
+	private double exp_result;
+	
+//	@Parameters
+//    public static Collection<Object[]> get_data() {
+//        return Arrays.asList(new Object[][] { { 0, "calplus", 7, 7.00 }, { 1, "caldiv", 5, 0.20 },
+//                { 0, "caldiv", 9, 0 }, { 2, "calmul", 3, 6.00 }, { 1, "calminus", 5, -4.00 }, });
+//    }
+
+//	@Parameters
+//    public static Collection<Object[]> data() throws FileNotFoundException {
+//		List<Object[]> data = new ArrayList<Object[]>();
+//		CsvReader reader = new CsvReader("data.csv");
+//
+//		try {
+//			reader.readHeaders();
+//			while (reader.readRecord())
+//			{
+//				int num1 = Integer.valueOf(reader.get("num1"));
+//				String oper = reader.get("oper");
+//				int num2 = Integer.valueOf(reader.get("num2"));
+//				double exp_result = Double.valueOf(reader.get("exp_result"));
+//				
+//				Object[] singleTest = {num1, oper, num2, exp_result};
+//				data.add(singleTest);
+//				
+//				// perform program logic here
+//
+//			}
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		reader.close();
+//        return data;
+//    }
+
+	@Parameters
+    public static Collection<Object[]> data() throws FileNotFoundException {
+		List<Object[]> data = new ArrayList<Object[]>();
+		try {
+
+	        DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+	        DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+	        Document doc = docBuilder.parse (new File("data.xml"));
+
+	        // normalize text representation
+	        doc.getDocumentElement().normalize();
+
+	        NodeList listOfTests = doc.getElementsByTagName("test");
+	        int totalTests = listOfTests.getLength();
+	        System.out.println("Total number of tests: " + totalTests);
+
+	        for(int s=0; s<listOfTests.getLength() ; s++){
+//	        for(Node testNode: listOfTests)
+
+
+	            Node aTestNode = listOfTests.item(s);
+	            if(aTestNode.getNodeType() == Node.ELEMENT_NODE){
+
+
+	                Element firstTestElement = (Element)aTestNode;
+
+	                //-------
+	                NodeList firstNumList = firstTestElement.getElementsByTagName("num1");
+	                Element firstNumElement = (Element)firstNumList.item(0);
+
+	                NodeList textFNList = firstNumElement.getChildNodes();
+	                int num1 = Integer.valueOf(((Node)textFNList.item(0)).getNodeValue().trim());
+
+	                //-------
+	                NodeList secondNumList = firstTestElement.getElementsByTagName("num2");
+	                Element secondNumElement = (Element)secondNumList.item(0);
+
+	                NodeList textSNList = secondNumElement.getChildNodes();
+	                int num2 = Integer.valueOf(((Node)textSNList.item(0)).getNodeValue().trim());
+	                
+	                //----
+	                NodeList operList = firstTestElement.getElementsByTagName("oper");
+	                Element operElement = (Element)operList.item(0);
+
+	                NodeList textOperList = operElement.getChildNodes();
+	                String oper = ((Node)textOperList.item(0)).getNodeValue().trim();
+
+	                //------
+
+	                NodeList resultList = firstTestElement.getElementsByTagName("result");
+	                Element resultElement = (Element)resultList.item(0);
+
+	                NodeList textRList = resultElement.getChildNodes();
+	                double result = Double.valueOf(((Node)textRList.item(0)).getNodeValue().trim());
+	                
+					Object[] singleTest = {num1, oper, num2, result};
+					data.add(singleTest);
+					
+	            }//end of if clause	            
+	        }//end of for loop with s var
+
+
+		}catch (Throwable t) {
+			t.printStackTrace ();
+	    }
+        return data;
+    }
+
+	
+    public DDCalculator(int num1, String oper, int num2, double result) {
+        super();
+        this.num1 = num1;
+        this.num2 = num2;
+        this.oper = oper;
+        exp_result = result;
+    }
+
+    @Before
+	public void setUp() throws Exception {
+		driver = getBrowser();
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		getBrowser().quit();
+	}
+    
+    @Test
+	public void testDDCalculator() throws Exception {
+		driver.get(URL);
+		assertEquals("Online Calculator", driver.getTitle());
+		driver.findElement(By.name("calcResults")).sendKeys(String.valueOf(num1));
+		driver.findElement(By.name(oper)).click();
+		driver.findElement(By.name("calcResults")).sendKeys(String.valueOf(num2));
+		driver.findElement(By.name("calequal")).click();
+		Double result = Double.valueOf(driver.findElement(By.name("calcResults")).getAttribute("value"));
+
+		assertTrue("Acquired result " + result + " does not equal expected result " + exp_result, result == exp_result);
+	}
+	
+	private WebDriver getBrowser() {
+		if (driver == null) {
+			driver = new FirefoxDriver();
+			driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+		}
+		return driver;
+	}
+}

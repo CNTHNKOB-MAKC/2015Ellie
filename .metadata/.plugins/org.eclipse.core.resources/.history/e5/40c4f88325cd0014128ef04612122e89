@@ -1,0 +1,48 @@
+package Ellie.Selenium_ADV_Day_04;
+
+import static org.junit.Assert.*;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import inclass.wk04.HttpData; 
+
+public class CreateUserWithREST {
+
+	final static private String LOGIN = "admin";
+	final static private String PASSWORD = "Password";
+	
+	private String empNumber = null;
+	
+	@Before
+	public void setUp() throws Exception {
+		HttpData.initializeClient();
+		String first = "Jane";
+		String last = "Doe";
+		
+		try {
+			if (HttpData.doLogin(LOGIN, PASSWORD) == null) {
+				System.out.println("Error: Login failed");
+			} 
+			else {
+//				String mainPage = doGetMainPage();
+				empNumber = HttpData.doAddEmployee(first, last);
+			}		
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		HttpData.closeClient();
+	}
+
+	@After
+	public void tearDown() throws Exception {
+	}
+
+	@Test
+	public void test() {
+		assertNotNull("Could not create Employee", empNumber);
+	}
+
+}

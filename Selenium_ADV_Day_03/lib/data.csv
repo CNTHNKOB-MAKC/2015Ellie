@@ -1,0 +1,5 @@
+num1,oper,num2,exp_result
+1,calplus,2,3.00
+5,calminus,6,-1.00
+9,caldiv,3,3.00
+4,calmul,2,8.00

@@ -1,0 +1,1 @@
+<calculator><test><num1>2</num1><num2>8</num2><oper>caldiv</oper><result>0.25</result></test><test><num1>9</num1><num2>6</num2><oper>calmul</oper><result>54.00</result></test><test><num1>3</num1><num2>4</num2><oper>calplus</oper><result>7.00</result></test><test><num1>8</num1><num2>1</num2><oper>calminus</oper><result>7.00</result></test></calculator>
